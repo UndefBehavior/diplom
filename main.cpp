@@ -12,7 +12,7 @@
 
 using namespace std;
 
-
+//Y`(t+1)=alpha*Y(t)+(1-alpha)*Y`(t)
 pair<double,double> get_coef_for_smoothing(const vector<pair<boost::gregorian::date,double> >& vals)
 {
     double min=1;
@@ -42,7 +42,7 @@ double get_h_for_kernel_density(const vector<pair<boost::gregorian::date,double>
     {
         double cur_h=double(i)/100;
         double cv=0.;
-        #pragma omp parallel for reduction(+:cv)
+#pragma omp parallel for reduction(+:cv)
         for(size_t j=1;j<vals.size();++j)
         {
             long double numer=0.,denom=0.;
@@ -60,6 +60,84 @@ double get_h_for_kernel_density(const vector<pair<boost::gregorian::date,double>
         if(cv<min){min=cv;h=cur_h;}
     }
     return 0.3*h;
+}
+
+//нулевой - либо минимум, либо ничего
+vector<pair<boost::gregorian::date,double> > get_min_max_for_exp_method(const vector<pair<boost::gregorian::date,double> >& vals, double alpha)
+{
+    vector<double> func;
+    vector<pair<boost::gregorian::date,double> > res;
+    func.emplace_back(vals[0].second);
+    for(size_t j=1;j<vals.size();++j)
+        func.emplace_back(alpha*vals[j-1].second+(1.-alpha)*func[j-1]);
+    bool flag;//0 - последним внесен минимум; 1 - последним внесен максимум.
+    if(func[1]<func[2]) {res.emplace_back(vals[1].first,func[1]);flag=0;}
+    else
+    {
+        res.emplace_back(boost::gregorian::date(),0.);
+        res.emplace_back(vals[1].first,func[1]);flag=1;
+    }
+    for(size_t i=2;i<func.size()-1;++i)
+    {
+        if(flag)
+        {
+            if(!((func[i-1]>func[i])&&(func[i+1]>func[i]))) continue;
+            flag^=1;
+            res.emplace_back(vals[i].first,func[i]);
+        }
+        else
+        {
+            if(!((func[i-1]<func[i])&&(func[i+1]<func[i]))) continue;
+            flag^=1;
+            res.emplace_back(vals[i].first,func[i]);
+        }
+    }
+    if(((func[func.size()-2]<func[func.size()-1])&&(!flag))||((func[func.size()-2]>func[func.size()-1])&&flag)) res.emplace_back(vals[func.size()-1].first,func[func.size()-1]);
+    return res;
+}
+
+vector<pair<boost::gregorian::date,double> > get_min_max_for_kernel_density(const vector<pair<boost::gregorian::date,double> >& vals, double h)
+{
+    vector<double> func(vals.size());
+    vector<pair<boost::gregorian::date,double> > res;
+#pragma omp parallel for
+    for(size_t j=0;j<vals.size();++j)
+    {
+        long double numer=0.,denom=0.;
+        for(size_t k=0;k<vals.size();++k)
+        {
+            if(k==j) continue;
+            long double e=-(vals[j].second-vals[k].second)*(vals[j].second-vals[k].second)/(2*h*h);
+            long double temp=exp(e);
+            numer+=(sin(vals[k].second)+0.5)*temp;
+            denom+=temp;
+        }
+        func[j]=numer/denom;
+    }
+    bool flag;//0 - последним внесен минимум; 1 - последним внесен максимум.
+    if(func[0]<func[1]) {res.emplace_back(vals[0].first,func[0]);flag=0;}
+    else
+    {
+        res.emplace_back(boost::gregorian::date(),0.);
+        res.emplace_back(vals[0].first,func[0]);flag=1;
+    }
+    for(size_t i=1;i<func.size()-1;++i)
+    {
+        if(flag)
+        {
+            if(!((func[i-1]>func[i])&&(func[i+1]>func[i]))) continue;
+            flag^=1;
+            res.emplace_back(vals[i].first,func[i]);
+        }
+        else
+        {
+            if(!((func[i-1]<func[i])&&(func[i+1]<func[i]))) continue;
+            flag^=1;
+            res.emplace_back(vals[i].first,func[i]);
+        }
+    }
+    if(((func[func.size()-2]<func[func.size()-1])&&(!flag))||((func[func.size()-2]>func[func.size()-1])&&flag)) res.emplace_back(vals[func.size()-1].first,func[func.size()-1]);
+    return res;
 }
 
 int main()
@@ -94,11 +172,19 @@ int main()
         getline(in_csv,alpha,';');
         getline(in_csv,h,'\n');
         if((alpha=="")||(h=="")) continue;
-        coefs.emplace(company,make_pair(stod(alpha),stod(h)));
-        cout << company << '\n';
+        coefs.emplace(company,make_pair(stod(alpha),((stod(h)==0.)?.0001:stod(h))));
     }
     values.erase("");
     cout <<"Complete!\nNumber of companies: " << values.size() << '\n';
+    for(auto& el:values)
+    {
+        vector<pair<boost::gregorian::date,double> > min_maxs_e=get_min_max_for_exp_method(el.second,(coefs.find(el.first))->second.first);
+        vector<pair<boost::gregorian::date,double> > min_maxs_k=get_min_max_for_kernel_density(el.second,(coefs.find(el.first))->second.second);
+        for(auto& mm:min_maxs_e) cout << mm.first << " : " << mm.second << '\n';
+        cout << '\n';
+        for(auto& mm:min_maxs_k) cout << mm.first << " : " << mm.second << '\n';
+        cout << '\n';
+    }
     /*
     out << "Company;Alpha;h*\n";
     for(auto& el:values)
