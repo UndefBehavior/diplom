@@ -34,7 +34,7 @@ pair<double,double> get_coef_for_smoothing(const vector<pair<boost::gregorian::d
     return make_pair(coef,1-min);
 }
 
-pair<double,double> get_h_for_kernel_density(const vector<pair<boost::gregorian::date,double> >& vals)
+double get_h_for_kernel_density(const vector<pair<boost::gregorian::date,double> >& vals)
 {
     double min=DBL_MAX;
     double h=0.;
@@ -59,16 +59,19 @@ pair<double,double> get_h_for_kernel_density(const vector<pair<boost::gregorian:
         cv/=vals.size();
         if(cv<min){min=cv;h=cur_h;}
     }
-    return make_pair(0.3*h,min);
+    return 0.3*h;
 }
 
 int main()
 {
     map<string,vector<pair<boost::gregorian::date,double> > > values;
+    map<string,pair<double,double> > coefs;
     std::ifstream in("torg3.txt");
-    ofstream out("results.csv");
+    //ofstream out("results.csv");
+    ifstream in_csv("results.csv");
+    string trash;
     cout << fixed << setprecision(6);
-    out << fixed << setprecision(6);
+    //out << fixed << setprecision(6);
     boost::gregorian::date_input_facet* facet(new boost::gregorian::date_input_facet("%d.%m.%Y"));
     in.imbue(std::locale(in.getloc(), facet));
     while(in.good())
@@ -83,8 +86,20 @@ int main()
         if(place==values.end()) place=(values.emplace(company,vector<pair<boost::gregorian::date,double> >())).first;
         place->second.emplace_back(price_date,price);
     }
+    getline(in_csv,trash);
+    while(in_csv.good())//Company;Alpha;h*
+    {
+        string company(""),alpha(""),h("");
+        getline(in_csv,company,';');
+        getline(in_csv,alpha,';');
+        getline(in_csv,h,'\n');
+        if((alpha=="")||(h=="")) continue;
+        coefs.emplace(company,make_pair(stod(alpha),stod(h)));
+        cout << company << '\n';
+    }
     values.erase("");
     cout <<"Complete!\nNumber of companies: " << values.size() << '\n';
+    /*
     out << "Company;Alpha;h*\n";
     for(auto& el:values)
     {
@@ -93,11 +108,11 @@ int main()
         pair<double,double> esc=get_coef_for_smoothing(el.second);
         cout << "esc: " << esc.first << " prob = " << esc.second << '\n';
         out << esc.first << ';';
-        pair<double,double> h=get_h_for_kernel_density(el.second);
-        cout << "h*: " << h.first << "prob= " << h.second << '\n';
+        double h=get_h_for_kernel_density(el.second);
+        cout << "h*: " << h << '\n';
         out << h.first << '\n';
 
-    }
+    }*/
     delete facet;
     return 0;
 }
