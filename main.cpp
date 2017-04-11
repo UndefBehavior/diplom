@@ -143,6 +143,7 @@ vector<pair<boost::gregorian::date,double> > get_min_max_for_kernel_density(cons
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_hs_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<5) return dates;
     for(size_t i=1;i<min_maxes.size()-4;i+=2)
     {
         if(!(min_maxes[i+2].second>min_maxes[i].second&&min_maxes[i+2].second>min_maxes[i+4].second)) continue;
@@ -158,6 +159,7 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_hs_models(const
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_ihs_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<5) return dates;
     for(size_t i=((!min_maxes[0].second)?2:0);i<min_maxes.size()-4;i+=2)
     {
         if(!(min_maxes[i+2].second<min_maxes[i].second&&min_maxes[i+2].second<min_maxes[i+4].second)) continue;
@@ -173,6 +175,7 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_ihs_models(cons
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_btop_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<5) return dates;
     for(size_t i=1;i<min_maxes.size()-4;i+=2)
     {
         if(!(min_maxes[i].second<min_maxes[i+2].second&&min_maxes[i+2].second<min_maxes[i+4].second)) continue;
@@ -185,6 +188,7 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_btop_models(con
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_bbot_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<5) return dates;
     for(size_t i=((!min_maxes[0].second)?2:0);i<min_maxes.size()-4;i+=2)
     {
         if(!(min_maxes[i].second>min_maxes[i+2].second&&min_maxes[i+2].second>min_maxes[i+4].second)) continue;
@@ -197,6 +201,7 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_bbot_models(con
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_ttop_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<5) return dates;
     for(size_t i=1;i<min_maxes.size()-4;i+=2)
     {
         if(!(min_maxes[i].second>min_maxes[i+2].second&&min_maxes[i+2].second>min_maxes[i+4].second)) continue;
@@ -209,6 +214,7 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_ttop_models(con
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_tbot_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<5) return dates;
     for(size_t i=((!min_maxes[0].second)?2:0);i<min_maxes.size()-4;i+=2)
     {
         if(!(min_maxes[i].second<min_maxes[i+2].second&&min_maxes[i+2].second<min_maxes[i+4].second)) continue;
@@ -221,6 +227,7 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_tbot_models(con
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_rtop_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<5) return dates;
     for(size_t i=1;i<min_maxes.size()-4;i+=2)
     {
         double max_avg=(min_maxes[i+2].second+min_maxes[i+4].second)/2;
@@ -236,6 +243,7 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_rtop_models(con
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_rbot_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<5) return dates;
     for(size_t i=((!min_maxes[0].second)?2:0);i<min_maxes.size()-4;i+=2)
     {
         double min_avg=(min_maxes[i+2].second+min_maxes[i+4].second)/2;
@@ -251,6 +259,7 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_rbot_models(con
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_dtop_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<3) return dates;
     for(size_t i=1;i<min_maxes.size()-2;i+=2)
     {
         pair<boost::gregorian::date,double> max_next={boost::gregorian::date(),DBL_MIN};
@@ -267,6 +276,7 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_dtop_models(con
 vector<pair<boost::gregorian::date,boost::gregorian::date> > get_dbot_models(const vector<pair<boost::gregorian::date,double> >& min_maxes)
 {
     vector<pair<boost::gregorian::date,boost::gregorian::date> > dates;
+    if(min_maxes.size()<3) return dates;
     for(size_t i=((!min_maxes[0].second)?2:0);i<min_maxes.size()-2;i+=2)
     {
         pair<boost::gregorian::date,double> min_next={boost::gregorian::date(),DBL_MAX};
@@ -280,12 +290,71 @@ vector<pair<boost::gregorian::date,boost::gregorian::date> > get_dbot_models(con
     return dates;
 }
 
+double get_exogen_value(const pair<boost::gregorian::date,boost::gregorian::date>& model,const string& model_info,const vector<pair<boost::gregorian::date,double> >& vals)
+{
+    double res=0.;
+    auto model_end = find_if( vals.begin(), vals.end(),
+                              [&model](const pair<boost::gregorian::date,double>& element){ return element.first == model.second;} );
+    auto model_after=model_end+3;
+    if(model_info.find("top")!=model_info.npos)
+        res=model_end->second-model_after->second;
+    else res=model_after->second-model_end->second;
+    return res;
+}
+
+double get_endogen_value(const pair<boost::gregorian::date,boost::gregorian::date>& model,const string& model_info,const vector<pair<boost::gregorian::date,double> >& vals)
+{
+    double res=0.;
+    auto model_end = find_if( vals.begin(), vals.end(),
+                              [&model](const pair<boost::gregorian::date,double>& element){ return element.first == model.second;} );
+    if(model_info.find("top")!=model_info.npos)
+    {
+        if(model_end->second>(model_end+1)->second)
+        {
+            auto next_min=model_end+1;
+            for(auto it=model_end+1;it!=vals.end();++it)
+                if(it->second<(it-1)->second) next_min=it;
+                else break;
+            res=model_end->second-next_min->second;
+        }
+        else
+        {
+            auto next=model_end+1;
+            for(auto it=model_end+1;it!=vals.end();++it)
+                if(it->second-model_end->second<0.01*model_end->second) next=it;
+                else break;
+            res=model_end->second-next->second;
+        }
+    }
+    else
+    {
+        if(model_end->second<(model_end+1)->second)
+        {
+            auto next_max=model_end+1;
+            for(auto it=model_end+1;it!=vals.end();++it)
+                if(it->second>(it-1)->second) next_max=it;
+                else break;
+            res=next_max->second-model_end->second;
+        }
+        else
+        {
+            auto next=model_end+1;
+            for(auto it=model_end+1;it!=vals.end();++it)
+                if(model_end->second-it->second<0.01*model_end->second) next=it;
+                else break;
+            res=next->second-model_end->second;
+        }
+    }
+    return res;
+}
+
 int main()
 {
     map<string,vector<pair<boost::gregorian::date,double> > > values;
     map<string,pair<double,double> > coefs;
     std::ifstream in("torg3.txt");
     //ofstream out("results.csv");
+    ofstream fout("final_results.txt");
     ifstream in_csv("results.csv");
     string trash;
     cout << fixed << setprecision(6);
@@ -315,15 +384,114 @@ int main()
         coefs.emplace(company,make_pair(stod(alpha),((stod(h)==0.)?.0001:stod(h))));
     }
     values.erase("");
-    cout <<"Complete!\nNumber of companies: " << values.size() << '\n';
-    for(auto& el:values)
+    cout <<"Number of companies: " << values.size() << '\n';
+    for(auto& el:values)//для каждой компании
     {
         vector<pair<boost::gregorian::date,double> > min_maxs_e=get_min_max_for_exp_method(el.second,(coefs.find(el.first))->second.first);
         vector<pair<boost::gregorian::date,double> > min_maxs_k=get_min_max_for_kernel_density(el.second,(coefs.find(el.first))->second.second);
-        for(auto& mm:min_maxs_e) cout << mm.first << " : " << mm.second << '\n';
-        cout << '\n';
-        for(auto& mm:min_maxs_k) cout << mm.first << " : " << mm.second << '\n';
-        cout << '\n';
+        map<string,vector<pair<boost::gregorian::date,boost::gregorian::date> > > models_for_exp,models_for_kernel;
+        models_for_exp.emplace("hstop",get_hs_models(min_maxs_e));
+        models_for_exp.emplace("ihsbot",get_ihs_models(min_maxs_e));
+        models_for_exp.emplace("btop",get_btop_models(min_maxs_e));
+        models_for_exp.emplace("bbot",get_bbot_models(min_maxs_e));
+        models_for_exp.emplace("ttop",get_ttop_models(min_maxs_e));
+        models_for_exp.emplace("tbot",get_tbot_models(min_maxs_e));
+        models_for_exp.emplace("rtop",get_rtop_models(min_maxs_e));
+        models_for_exp.emplace("rbot",get_rbot_models(min_maxs_e));
+        models_for_exp.emplace("dtop",get_dtop_models(min_maxs_e));
+        models_for_exp.emplace("dbot",get_dbot_models(min_maxs_e));
+
+        models_for_kernel.emplace("hstop",get_hs_models(min_maxs_k));
+        models_for_kernel.emplace("ihsbot",get_ihs_models(min_maxs_k));
+        models_for_kernel.emplace("btop",get_btop_models(min_maxs_k));
+        models_for_kernel.emplace("bbot",get_bbot_models(min_maxs_k));
+        models_for_kernel.emplace("ttop",get_ttop_models(min_maxs_k));
+        models_for_kernel.emplace("tbot",get_tbot_models(min_maxs_k));
+        models_for_kernel.emplace("rtop",get_rtop_models(min_maxs_k));
+        models_for_kernel.emplace("rbot",get_rbot_models(min_maxs_k));
+        models_for_kernel.emplace("dtop",get_dtop_models(min_maxs_k));
+        models_for_kernel.emplace("dbot",get_dbot_models(min_maxs_k));
+        long double prof_end=0.,loss_end=0.,prof_ex=0.,loss_ex=0.;
+        fout << el.first << "\nexponential method\n";
+        for(auto& exp:models_for_exp)//для каждой модели экспоненциального метода
+        {
+            fout << exp.first << " model: total = " << exp.second.size() << '\n';
+            size_t k=1;
+            if(exp.second.size())for(auto models=exp.second.begin();models!=exp.second.end()-1;++models)
+            {
+                if(models->second.year()==(models+1)->second.year()) ++k;
+                else
+                {
+                    fout << models->second.year() << ": " << k << '\n';
+                    k=1;
+                }
+            }
+            if(exp.second.size())fout << (exp.second.end()-1)->second.year() << ": " << k << '\n';
+
+            double profit=0.,loss=0.;
+            fout << "endogenous method\n";
+            if(exp.second.size())for(auto models=exp.second.begin();models!=exp.second.end();++models)//для каждого появления модели
+            {
+                double n=get_endogen_value(*models,exp.first,el.second);
+                (n>0)? profit+=n:loss-=n;
+            }
+            prof_end+=profit;
+            loss_end+=loss;
+            fout << "profit = " << profit << "\nloss = " << loss << '\n';
+            profit=0.;
+            loss=0.;
+            fout << "exogenous method\n";
+            if(exp.second.size())for(auto models=exp.second.begin();models!=exp.second.end();++models)//для каждого появления модели
+            {
+                double n=get_exogen_value(*models,exp.first,el.second);
+                (n>0)? profit+=n:loss-=n;
+            }
+            prof_ex+=profit;
+            loss_ex+=loss;
+            fout << "profit = " << profit << "\nloss = " << loss << '\n';
+        }
+        fout << "profit_endogenous = " << prof_end << "\nloss_endgenous = " << loss_end << "\nprofit_exogenous = " << prof_ex << "\nloss_exogenous = " << loss_ex << '\n';
+        prof_end=0.,loss_end=0.,prof_ex=0.,loss_ex=0.;
+        fout << el.first << "\nkernel density\n";
+        for(auto& kernel:models_for_kernel)//для каждой модели регрессии ядра
+        {
+            fout << kernel.first << " model: total = " << kernel.second.size() << '\n';
+            size_t k=1;
+            if(kernel.second.size())for(auto models=kernel.second.begin();models!=kernel.second.end()-1;++models)
+            {
+                if(models->second.year()==(models+1)->second.year()) ++k;
+                else
+                {
+                    fout << models->second.year() << ": " << k << '\n';
+                    k=1;
+                }
+            }
+            if(kernel.second.size())fout << (kernel.second.end()-1)->second.year() << ": " << k << '\n';
+
+
+            double profit=0.,loss=0.;
+            fout << "endogenous method\n";
+            if(kernel.second.size())for(auto models=kernel.second.begin();models!=kernel.second.end();++models)//для каждого появления модели
+            {
+                double n=get_endogen_value(*models,kernel.first,el.second);
+                (n>0)? profit+=n:loss-=n;
+            }
+            prof_end+=profit;
+            loss_end+=loss;
+            fout << "profit = " << profit << "\nloss = " << loss << '\n';
+            profit=0.;
+            loss=0.;
+            fout << "exogenous method\n";
+            if(kernel.second.size())for(auto models=kernel.second.begin();models!=kernel.second.end();++models)//для каждого появления модели
+            {
+                double n=get_exogen_value(*models,kernel.first,el.second);
+                (n>0)? profit+=n:loss-=n;
+            }
+            prof_ex+=profit;
+            loss_ex+=loss;
+            fout << "profit = " << profit << "\nloss = " << loss << '\n';
+        }
+        fout << "profit_endogenous = " << prof_end << "\nloss_endgenous = " << loss_end << "\nprofit_exogenous = " << prof_ex << "\nloss_exogenous = " << loss_ex << '\n';
     }
 
     //часть,нужная для заполнения res.csv. Для ее активации надо закомментить часть от values.erase("") до нее, раскомментить эту часть, а также строки, связанный с ofstring out. Время выполнения перезаписи ~1 часа, в зависимости от количества ядер процессора.
@@ -341,6 +509,7 @@ int main()
         out << h.first << '\n';
 
     }*/
+    cout << "Complete!\n";
     delete facet;
     return 0;
 }
