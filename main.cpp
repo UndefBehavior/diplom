@@ -359,6 +359,14 @@ double get_endogen_value(const pair<boost::gregorian::date,boost::gregorian::dat
     return res;
 }
 
+double get_endogen_value_mod(const pair<boost::gregorian::date,boost::gregorian::date>& model,const string& model_info,const vector<pair<boost::gregorian::date,double> >& vals)
+{
+    auto model_end = find_if( vals.begin(), vals.end(),
+                              [&model](const pair<boost::gregorian::date,double>& element){ return element.first == model.second;} );
+
+    return get_endogen_value(make_pair(model.first,(model_end+1)->first),model_info,vals);
+}
+
 int main()
 {
     map<string,vector<pair<boost::gregorian::date,double> > > values;
@@ -435,7 +443,7 @@ int main()
         models_for_kernel.emplace("dbot",get_dbot_models(min_maxs_k));
 
 
-        long double prof_end=0.,loss_end=0.,prof_ex=0.,loss_ex=0.;
+        long double prof_end=0.,loss_end=0.,prof_ex=0.,loss_ex=0.,prof_end_mod=0.,loss_end_mod=0.;
         fout << el.first << "\nexponential method\n";
         for(auto& exp:models_for_exp)//для каждой модели экспоненциального метода
         {
@@ -467,6 +475,8 @@ int main()
                     }
                     else
                     {
+                        double n=get_endogen_value(*(exp.second.end()-1),exp.first,el.second);
+                        (n>0)? profit+=n:loss-=n;
                         profit_tot+=profit;
                         loss_tot+=loss;
                         fout << "Total in " << models->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';//вывод дохода/расхода по модели за год
@@ -474,6 +484,8 @@ int main()
                         loss=0.;
                     }
                 }
+                double n=get_endogen_value(*(exp.second.end()-1),exp.first,el.second);
+                (n>0)? profit+=n:loss-=n;
                 profit_tot+=profit;
                 loss_tot+=loss;
                 fout << "Total in " << (exp.second.end()-1)->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';
@@ -484,6 +496,39 @@ int main()
                 loss_tot=0.;
                 profit=0.;
                 loss=0.;
+
+                fout << "endogenous_mod method\n";
+                for(auto models=exp.second.begin();models!=exp.second.end()-1;++models)//для каждого появления модели
+                {
+                    if(models->second.year()==(models+1)->second.year())
+                    {
+                        double n=get_endogen_value_mod(*models,exp.first,el.second);
+                        (n>0)? profit+=n:loss-=n;
+                    }
+                    else
+                    {
+                        double n=get_endogen_value_mod(*(exp.second.end()-1),exp.first,el.second);
+                        (n>0)? profit+=n:loss-=n;
+                        profit_tot+=profit;
+                        loss_tot+=loss;
+                        fout << "Total in " << models->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';//вывод дохода/расхода по модели за год
+                        profit=0.;
+                        loss=0.;
+                    }
+                }
+                n=get_endogen_value_mod(*(exp.second.end()-1),exp.first,el.second);
+                (n>0)? profit+=n:loss-=n;
+                profit_tot+=profit;
+                loss_tot+=loss;
+                fout << "Total in " << (exp.second.end()-1)->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';
+                fout << "Total for " << exp.first << " model: profit = " << profit_tot << "; loss = " << loss_tot << '\n';//вывод дохода/расхода по модели
+                prof_end_mod+=profit_tot;
+                loss_end_mod+=loss_tot;
+                profit_tot=0.;
+                loss_tot=0.;
+                profit=0.;
+                loss=0.;
+
                 fout << "exogenous method\n";
                 for(auto models=exp.second.begin();models!=exp.second.end()-1;++models)//для каждого появления модели
                 {
@@ -494,6 +539,8 @@ int main()
                     }
                     else
                     {
+                        double n=get_exogen_value(*(exp.second.end()-1),exp.first,el.second);
+                        (n>0)? profit+=n:loss-=n;
                         profit_tot+=profit;
                         loss_tot+=loss;
                         fout << "Total in " << models->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';//вывод дохода/расхода по модели за год
@@ -501,6 +548,8 @@ int main()
                         loss=0.;
                     }
                 }
+                n=get_exogen_value(*(exp.second.end()-1),exp.first,el.second);
+                (n>0)? profit+=n:loss-=n;
                 profit_tot+=profit;
                 loss_tot+=loss;
                 fout << "Total in " << (exp.second.end()-1)->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';
@@ -509,8 +558,8 @@ int main()
                 loss_ex+=loss_tot;
             }
         }
-        fout << "profit_endogenous = " << prof_end << "\nloss_endgenous = " << loss_end << "\nprofit_exogenous = " << prof_ex << "\nloss_exogenous = " << loss_ex << '\n';//вывод общих доходов/расходов, посчитанных экзогенным/эндогенным методами, для компании по всем моделям
-        prof_end=0.,loss_end=0.,prof_ex=0.,loss_ex=0.;
+        fout << "profit_endogenous = " << prof_end << "\nloss_endgenous = " << loss_end<< "profit_endogenous modification = " << prof_end_mod << "\nloss_endgenous modification = " << loss_end_mod << "\nprofit_exogenous = " << prof_ex << "\nloss_exogenous = " << loss_ex << '\n';//вывод общих доходов/расходов, посчитанных экзогенным/эндогенным методами, для компании по всем моделям
+        prof_end=0.,loss_end=0.,prof_ex=0.,loss_ex=0.,prof_end_mod=0.,loss_end_mod=0.;
         fout << "\nkernel density\n";
         for(auto& kernel:models_for_kernel)//для каждой модели регрессии ядра делаем то же, что и для моделей для экспоненциального метода
         {
@@ -542,6 +591,8 @@ int main()
                     }
                     else
                     {
+                        double n=get_endogen_value(*(kernel.second.end()-1),kernel.first,el.second);
+                        (n>0)? profit+=n:loss-=n;
                         profit_tot+=profit;
                         loss_tot+=loss;
                         fout << "Total in " << models->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';//вывод дохода/расхода по модели за год
@@ -549,6 +600,8 @@ int main()
                         loss=0.;
                     }
                 }
+                double n=get_endogen_value(*(kernel.second.end()-1),kernel.first,el.second);
+                (n>0)? profit+=n:loss-=n;
                 profit_tot+=profit;
                 loss_tot+=loss;
                 fout << "Total in " << (kernel.second.end()-1)->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';
@@ -559,6 +612,39 @@ int main()
                 loss_tot=0.;
                 profit=0.;
                 loss=0.;
+
+                fout << "endogenous_mod method\n";
+                for(auto models=kernel.second.begin();models!=kernel.second.end()-1;++models)//для каждого появления модели
+                {
+                    if(models->second.year()==(models+1)->second.year())
+                    {
+                        double n=get_endogen_value_mod(*models,kernel.first,el.second);
+                        (n>0)? profit+=n:loss-=n;
+                    }
+                    else
+                    {
+                        double n=get_endogen_value_mod(*(kernel.second.end()-1),kernel.first,el.second);
+                        (n>0)? profit+=n:loss-=n;
+                        profit_tot+=profit;
+                        loss_tot+=loss;
+                        fout << "Total in " << models->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';//вывод дохода/расхода по модели за год
+                        profit=0.;
+                        loss=0.;
+                    }
+                }
+                n=get_endogen_value_mod(*(kernel.second.end()-1),kernel.first,el.second);
+                (n>0)? profit+=n:loss-=n;
+                profit_tot+=profit;
+                loss_tot+=loss;
+                fout << "Total in " << (kernel.second.end()-1)->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';
+                fout << "Total for " << kernel.first << " model: profit = " << profit_tot << "; loss = " << loss_tot << '\n';
+                prof_end_mod+=profit_tot;
+                loss_end_mod+=loss_tot;
+                profit_tot=0.;
+                loss_tot=0.;
+                profit=0.;
+                loss=0.;
+
                 fout << "exogenous method\n";
                 for(auto models=kernel.second.begin();models!=kernel.second.end()-1;++models)//для каждого появления модели
                 {
@@ -569,6 +655,8 @@ int main()
                     }
                     else
                     {
+                        double n=get_exogen_value(*(kernel.second.end()-1),kernel.first,el.second);
+                        (n>0)? profit+=n:loss-=n;
                         profit_tot+=profit;
                         loss_tot+=loss;
                         fout << "Total in " << models->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';//вывод дохода/расхода по модели за год
@@ -576,6 +664,8 @@ int main()
                         loss=0.;
                     }
                 }
+                n=get_exogen_value(*(kernel.second.end()-1),kernel.first,el.second);
+                (n>0)? profit+=n:loss-=n;
                 profit_tot+=profit;
                 loss_tot+=loss;
                 fout << "Total in " << (kernel.second.end()-1)->second.year() << ": profit = " << profit << "; loss = " << loss << '\n';
@@ -584,7 +674,7 @@ int main()
                 loss_ex+=loss_tot;
             }
         }
-        fout << "profit_endogenous = " << prof_end << "\nloss_endgenous = " << loss_end << "\nprofit_exogenous = " << prof_ex << "\nloss_exogenous = " << loss_ex << '\n';
+        fout << "profit_endogenous = " << prof_end << "\nloss_endgenous = " << loss_end<< "profit_endogenous modification = " << prof_end_mod << "\nloss_endgenous modification = " << loss_end_mod << "\nprofit_exogenous = " << prof_ex << "\nloss_exogenous = " << loss_ex << '\n';//вывод общих доходов/расходов, посчитанных экзогенным/эндогенным методами, для компании по всем моделям
     }
 
     //часть,нужная для заполнения res.csv. Для ее активации надо закомментить часть, начинающуюся после values.erase("") до этого момента, раскомментить эту часть, а также строки, связанные с ofstring out. Время выполнения перезаписи ~1 часа, в зависимости от количества ядер процессора.
